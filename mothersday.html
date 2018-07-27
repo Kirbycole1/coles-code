@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="description" content="Mother's Day App">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Mother's Day App</title>
+  <style>
+    body { margin: 0; }
+    canvas { display: block; }
+  </style>
+  <script>
+   
+//globals
+var canvas, ctx, width, height,
+    flowers = 100;
+    
+//setup
+    document.addEventListener("DOMContentLoaded", init);
+    function init(){
+      canvas = document.querySelector("canvas");
+      ctx = canvas.getContext("2d");
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      //
+      canvas.addEventListener("click", makeFlowers);
+      makeFlowers();
+    }
+    function makeFlowers(){
+            for (let i=0; i<flowers; i++){
+      let x =  Math.random()*width, 
+          y =  Math.random()*height,
+          rand = Math.random();
+      if (rand < 0.4) makeDaisy(x, y);
+      else if (rand < 0.85) makeRose(x, y);
+      else makeMum(x, y);
+        }
+    }
+    
+    function makeDaisy(x, y){
+      var radius = Math.random() * 50 + 30,
+          red = Math.floor(Math.random() * 156 + 100),
+          green = Math.floor(Math.random() * 156 + 100),
+          blue = Math.floor(Math.random() * 156 + 100),
+          petalFill = `rgba(${red}, ${green}, ${blue}, .8)`,
+          petals = Math.floor(Math.random() * 5 + 5);
+      ctx.fillStyle = petalFill;
+      for (let a=0; a<Math.PI*2; a+=Math.PI*2/petals){
+          ctx.beginPath();
+        let petalX = x + Math.cos(a) * radius,
+            petalY = y + Math.sin(a) * radius;
+        ctx.arc(petalX, petalY, radius, 0, Math.PI*2);
+        ctx.fill();
+        
+       
+    }
+    for (let i=50; i>0; i--){
+      let r = radius/50;
+      ctx.fillStyle = `rgb(${red-i}, ${green-i}, ${blue-i})`;
+      ctx.beginPath();
+      ctx.arc(x, y, r*i, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    }
+    
+    function makeRose(x, y){
+       var radius = Math.random() * 50 + 30,
+          red = Math.floor(Math.random() * 156 + 100),
+          green = Math.floor(Math.random() * 156 + 100),
+          blue = Math.floor(Math.random() * 156 + 100),
+          transparency = 1,
+          petals = Math.floor(Math.random() * 5 + 5);
+      for (let a=0; a<Math.PI*8; a+=Math.PI*2/petals){
+        ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, ${transparency})`
+        ctx.beginPath();
+        let petalX = x + Math.cos(a) * radius,
+            petalY = y + Math.sin(a) * radius;
+        ctx.arc(petalX, petalY, radius, 0, Math.PI*2);
+        ctx.fill();
+        radius - Math.max(radius-1,1);
+        red-=10;
+        green-=10;
+        blue-=10;
+        transparency*= 0.85;
+      }
+    }
+    
+  function makeMum(x, y){
+     var radius = Math.random() * 50 + 30,
+          red = Math.floor(Math.random() * 156 + 100),
+          green = Math.floor(Math.random() * 156 + 100),
+          blue = Math.floor(Math.random() * 156 + 100),
+          petalFill = `rgba(${red}, ${green}, ${blue}, .5)`,
+          petals = Math.floor(Math.random() * 20 + 40);
+    ctx.strokeStyle = petalFill;
+    ctx.lineWidth = 5;
+    for (let a=0; a<Math.PI*2; a+=Math.PI*2/petals){
+      ctx.beginPath()
+      ctx.moveTo(x, y);
+      ctx.lineTo(x+Math.cos(a)*radius, y+Math.sin(a)*radius);
+      ctx.stroke();
+    }
+  }
+  </script>
+</head>
+<body>
+<canvas></canvas>
+  <heading>Happy Mother's Day!</heading>
+</body>
+</html>

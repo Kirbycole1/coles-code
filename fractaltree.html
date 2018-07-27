@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="description" content="Fractal Tree">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Fractal Tree</title>
+  <style>
+    body { margin: 0; }
+    canvas { display: block; }
+    nav { position: absolute; bottom: 10px; width: 100%; text-align: center;}
+    </style>
+  <script>
+    
+    //globals
+  var canvas, ctx, width, height, trunkColor = 100, leafColor = 100,
+      startX, startY,
+      startAngle = -Math.PI/2, //up
+      leftAngleDeviation = 0.35,
+      rightAngleDeviation = 0.35,
+      lengthMultiplier = 10,
+      widthMultiplier = 0,
+      depth = 10;
+      
+    
+    //setup
+    document.addEventListener("DOMContentLoaded", init);
+    function init(){
+      canvas = document.querySelector("canvas");
+      ctx = canvas.getContext("2d");
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      startX = width/2,
+      startY = height*4/5;
+      //events
+      document.querySelector("nav input:nth-of-type(1)").addEventListener("input", changeLeftAngleDeviation);
+      document.querySelector("nav input:nth-of-type(2)").addEventListener("input", changeRightAngleDeviation);
+      document.querySelector("nav input:nth-of-type(3)").addEventListener("input", changeWidthMultiplier);
+      document.querySelector("nav input:nth-of-type(4)").addEventListener("input", changeDepth);
+      document.querySelector("nav input:nth-of-type(5)").addEventListener("input", changeLengthMultiplier);
+       document.querySelector("nav input:nth-of-type(6)").addEventListener("input", changeTrunkColor);
+      document.querySelector("nav input:nth-of-type(7)").addEventListener("input", changeLeafColor);
+      //start
+      draw();
+    }
+    
+    //event handlers
+    function changeLeftAngleDeviation(e){
+      leftAngleDeviation = e.target.max - e.target.value;
+      draw();
+    }
+    function changeRightAngleDeviation(e){
+      rightAngleDeviation = +e.target.value;
+      draw();
+    }
+    function changeWidthMultiplier(e){
+      widthMultiplier = +e.target.value;
+      draw();
+    }
+    function changeDepth(e){
+      depth = +e.target.value;
+      draw();
+    }
+    function changeLengthMultiplier(e){
+      lengthMultiplier = +e.target.value;
+      draw();
+    }
+    function changeTrunkColor(e){
+      trunkColor = +e.target.value;
+      draw();
+    }
+     function changeLeafColor(e){
+      leafColor = +e.target.value;
+      draw();
+    }
+    
+    //draw
+    function draw(){
+      ctx.clearRect(0, 0, width, height);
+      ctx.beginPath();
+      fractalTree(startX, startY, startAngle, leftAngleDeviation, rightAngleDeviation, depth);
+      ctx.closePath();
+      ctx.stroke();
+    }
+    function fractalTree(x1, y1, angle, langle, rangle, d){
+      if (d > 0){
+        var x2 = x1 + (Math.cos(angle) * d * lengthMultiplier);
+        var y2 = y1 + (Math.sin(angle) * d * lengthMultiplier);
+        var color = "rgb("+Math.floor(d/depth * 255)+", "+Math.floor(trunkColor)+", "+Math.floor(leafColor)+")"
+        line(x1, y1, x2, y2, d * widthMultiplier, color);
+        
+        fractalTree(x2, y2, angle - langle, langle, rangle, d-1);
+        fractalTree(x2, y2, angle + rangle, langle, rangle, d-1);
+      } 
+    }
+    function line(x1, y1, x2, y2, lineWidth=1, color){
+      ctx.strokeStyle=color;
+      ctx.beginPath();
+      ctx.lineWidth = lineWidth;
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+    }
+ 
+  </script>
+</head>
+<body>
+  <canvas></canvas>
+  <nav>
+    <input type="range" min=0 max=3 step=0.05 value=2.65 />
+    <input type="range" min=0 max=3 step=0.05 value=0.35 />
+    <input type="range" min=0 max=5 step=0.5 value=0 />
+    <input type="range" min=1 max=15 step=1 value=10 />
+    <input type="range" min=1 max=25 step=1 value=10 />
+    <input type="range" min=1 max=255 step=1 value=100 />
+    <input type="range" min=1 max=255 step=1 value=100 />
+  </nav>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JSPaint</title>
+  <style>
+    body { margin: 0; }
+    canvas { display: block; }
+    nav { position: absolute; text-align: center; width: 110px; top: 0; left: 0; }
+    nav div { width: 90px; height: 90px; margin: 10px auto; border: 1px solid silver;
+      border-radius: 50%; }
+    nav input[type="range"] { width: 100px; margin: 0 auto 10px auto; display: inline-block;}
+    nav button.changeColor { display: inline-block; width: 50px; height: 50px; border: 1px solid silver; }
+    #black { background-color: black; }
+    #white { background-color: white; }
+    #red { background-color: red; }
+    #blue { background-color: blue; }
+    #green { background-color: green; }
+    #yellow { background-color: yellow; }
+    #purple { background-color: purple; }
+    #orange { background-color: orange; }
+    nav button.clearCanvas { margin-top: 4px; width: 100px; }
+  </style>
+  <script>
+    //globals
+    var canvas, ctx, width, height, currentColorElm, isDrawing = false, lastPoint;
+    
+    //init
+    document.addEventListener("DOMContentLoaded", init);
+    function init(){
+      canvas = document.querySelector("canvas");
+      ctx = canvas.getContext("2d");
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      currentColorElm = document.querySelector("div");
+      //event listeners
+      canvas.addEventListener("mousedown", handleMousedown);
+      canvas.addEventListener("mousemove", handleMousemove);
+      canvas.addEventListener("mouseup", handleMouseup);
+      //nav slider
+      document.querySelector("nav input[type='range']").addEventListener("input", handleChangePenSize);
+      //color buttons
+      [...document.querySelectorAll("button")].forEach((button)=>{
+        if (button.className === "changeColor"){
+        button.addEventListener("click", handleChangeColor);
+        }
+        if (button.className === "clearCanvas"){
+          button.addEventListener("click", handleClearCanvas);
+        }
+      });
+      //setup
+      handleChangeColor({target:{id:"black"}});
+      handleChangePenSize({target:document.querySelector("nav input[type='range']")});
+    }
+    
+    //event handlers
+    function handleMousedown(e){
+      isDrawing = true;
+      lastPoint = {x: e.clientX, y: e.clientY};
+    }
+    function handleMouseup(){
+      isDrawing = false;
+    }
+    function handleMousemove(e){
+      if (!isDrawing) return;
+      ctx.beginPath();
+      ctx.moveTo(lastPoint.x, lastPoint.y);
+      ctx.lineTo(e.clientX, e.clientY);
+      ctx.closePath();
+      ctx.stroke();
+      lastPoint = {x: e.clientX, y: e.clientY};
+    }
+    function handleChangeColor(e){
+      ctx.strokeStyle = e.target.id;
+      currentColorElm.style.backgroundColor = e.target.id;
+    }
+    function handleClearCanvas(e){
+      ctx.clearRect(0, 0, width, height)
+    }
+    function handleChangePenSize(e){
+     currentColorElm.style.width = currentColorElm.style.height = e.target.value * 2 + "px";
+      ctx.lineWidth = e.target.value 
+    }
+  </script>
+</head>
+<body>
+  <canvas></canvas>
+  <nav>
+    <input type="range" min=1 max=20 value=3/>
+    <div></div>
+    <button class="changeColor" id="black"></button>
+    <button class="changeColor" id="white"></button>
+    <button class="changeColor" id="red"></button>
+    <button class="changeColor" id="blue"></button>
+    <button class="changeColor" id="green"></button>
+    <button class="changeColor" id="yellow"></button>
+    <button class="changeColor" id="purple"></button>
+    <button class="changeColor" id="orange"></button>
+    <button class="clearCanvas">Clear</button>
+  </nav>
+</body>
+</html>

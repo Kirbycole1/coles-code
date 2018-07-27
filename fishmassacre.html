@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <canvas id="canvas1" height="300" width="300"/>
+  <title>Lilypad Game</title>
+  <style>
+    body { margin: 0; }
+    canvas { background-color: blue; display: block; }
+    p { color: black; size: 10px; text-align: center; }
+  </style>
+  <script>
+  var canvas, ctx, width, height,
+     lilypads = [], lilypadregen = 50,
+      scorenum = 0, lilypop, flowerpop, riverspeed = 2, 
+      scorecalc = 0, clock, fishregen = 1, fishriverspeed = 3;
+  
+  document.addEventListener("DOMContentLoaded", init);
+    function init(){
+      canvas = document.querySelector("canvas");
+      ctx = canvas.getContext("2d");
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      lilypop = document.querySelector("#lilypop");
+      flowerpop = document.querySelector("#flowerpop");
+      ctx.fillStyle = "rgba(0,200,0,0.4)";
+      ctx.strokeStyle = "rgb(135,200,235)";
+      ctx.lineWidth = 3;
+      //makeCircles(lilypadregen);
+      alert("instructions: fish(orange circles) give 20 points, clicking water takes away 5, lilypads with flowers take away half your points, reach 1000 points to 'win'")
+      makeMultipleLilypads(lilypadregen);
+      makeFishBase(fishregen)
+      loop();
+      startClock();
+    }
+    document.addEventListener("mousedown", pop);
+    function makeFishBase(a){
+       fish = [];
+      for(let i=0;i<a;i++){
+        let fx = Math.random() * -width - 100,
+            fy = Math.random() * height,
+            fr = Math.random() * 30 + 10,
+            vx = 0,
+            vy = Math.random() * 4 - 2,
+            flightness = Math.random() * 30 + 40; 
+        
+        fish.push({fx, fy, fr, vx, vy, flightness });
+      
+      }
+     
+     
+    }
+    function makeFish(fx, fy, fr){
+     for(let i=0; i<fish.length; i++){
+        let {fx, fy, fr} = fish[i];
+      ctx.fillStyle = "hsl(33, 100%, "+fish[i].flightness+"%)";
+        ctx.beginPath();
+        ctx.arc(fx, fy, fr, 0, Math.PI*2);
+        ctx.fill();
+
+      }
+    }
+    function makeSingleLilypad(){
+      let x = Math.random() * -width - 100,
+            y = Math.random() * height,
+            r = Math.random() * 80 + 20,
+            hasflower = (Math.random() <0.2)?true:false;
+            //isgolden = (Math.random() <0.1)?true:false;
+      return {x, y, r, hasflower};
+    }
+    function makeMultipleLilypads(n){
+      for(let i=0;i<n;i++){
+        lilypads.push(makeSingleLilypad());
+      }
+    }
+    /*
+    function makeCircles(n){
+      lilypads = [];
+      for(let i=0;i<n;i++){
+        let x = Math.random() * -width - 100,
+            y = Math.random() * height,
+            r = Math.random() * 80 + 20,
+            hasflower = (Math.random() <0.2)?true:false,
+            isgolden = (Math.random() <0.1)?true:false;
+        
+        lilypads.push({x, y, r, hasflower});
+         findscorecalc(r);
+      }
+      makeLilypads();
+     
+    }
+    */
+    function makeLilypads(){
+      for(let i=0; i<lilypads.length; i++){
+        let {x, y, r, hasflower} = lilypads[i];
+        //let green = Math.floor(Math.random() * 100 + 150);
+        makeGradient(x, y, r, "rgba(0, 200, 0, 0.5)", 10);
+        if (hasflower)makeFlower(x, y, r/6);
+
+      }
+    }
+    
+    function makeCircle(x, y, r, color){   
+        ctx.fillStyle = color;
+          ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI*2);
+        ctx.fill();
+        //ctx.stroke();
+    };
+    
+    function loop(){
+       for(let i=lilypads.length-1; i>=0; i--){
+         lilypads[i].x += riverspeed;
+         if(lilypads[i].x>width+100){
+           //lilypads.splice(i, 1);
+           lilypads[i] = makeSingleLilypad();
+         }
+       }
+       for(let i=fish.length-1; i>=0; i--){
+         if (Math.random()<0.05){
+           fish[i].vy = Math.random() * 4 - 2;
+           fish[i].vx = Math.random() * 2 - 1;
+         }
+         fish[i].fx += fish[i].vx + fishriverspeed;
+         fish[i].fy += fish[i].vy;
+         if(fish[i].fx>width+100  || fish[i].fy<-100 || fish[i].fy>height+100){
+           fish.splice(i, 1);
+         }
+       }
+      ctx.clearRect(0,0,width,height);
+      makeFish();
+      makeLilypads();
+      makeScore();
+      /*if(lilypads.length === 0){
+            lilypadregen +=10;
+            riverspeed += Math.random() * 0.1;
+            wavenum++;
+            makeCircles(lilypadregen);
+          }*/
+      if(fish.length === 0){
+          fishregen +=0.5;
+          fishriverspeed += Math.random() * 0.1;
+          makeFishBase(fishregen);
+      }
+      if(fish.length >= 30){
+        fishregen = 30;
+      }
+      if(fishriverspeed >=5){
+        fishriverspeed = 5;
+      }
+      
+      if (!gameover())
+      requestAnimationFrame(loop);
+      else winscreen();
+    };
+    
+    function makeGradient(x, y, r, color, rings){
+      var dr = r/(rings+1);
+      for (let i=0;i<rings; i++){
+        makeCircle(x, y, r, color);
+        r-= dr;
+      };
+    };
+     function makeFlower(x, y, radius){
+       var 
+          red = 250,
+          green = 0,
+          blue = 0,
+          transparency = 1,
+          petals = 7;
+      for (let a=0; a<Math.PI*8; a+=Math.PI*2/petals){
+        ctx.fillStyle = `rgba(${red}, ${green}, ${blue}, ${transparency})`
+        ctx.beginPath();
+        let petalX = x + Math.cos(a) * radius,
+            petalY = y + Math.sin(a) * radius;
+        ctx.arc(petalX, petalY, radius, 0, Math.PI*2);
+        ctx.fill();
+        radius - Math.max(radius-1,1);
+        red-=10;
+        green-=10;
+        blue-=10;
+        transparency*= 0.9;
+      }
+    }
+    
+    function findscorecalc(r){
+      return (101 - r) / 10 + 1;
+      //pop(scorecalc);
+    }
+      
+    function pop(e){
+      for(let i=lilypads.length-1;i>=0;i--){
+        if(dist(e.clientX, e.clientY, lilypads[i].x, lilypads[i].y)<lilypads[i].r){
+         var popped = lilypads[i];//lilypads.splice(i, 1)[0];
+          
+          if (popped.hasflower){
+            flowerpop.currentTime = 0;
+            flowerpop.play();
+            scorenum = Math.round(scorenum/2);
+          }
+          else { 
+          lilypop.currentTime = 0;
+          lilypop.play();
+
+           
+               }
+          lilypads[i] = makeSingleLilypad();
+          return;
+        }
+      }
+      for(let i=fish.length-1; i>=0; i--){
+        if(dist(e.clientX, e.clientY, fish[i].fx, fish[i].fy)<fish[i].fr){
+          var fishpopped = fish.splice(i, 1)[0];
+          
+          if (fishpopped){
+            lilypop.currentTime = 0;
+            lilypop.play();
+            scorenum += 20;
+            return;
+          }
+        }
+      }
+      //if no lilypad was clicked on
+      scorenum = Math.max(scorenum - 5, 0);
+      //splash.currentTime = 0;
+      splash.play();
+      
+    };
+    function dist(x1, y1, x2, y2){
+      var dx = x1 - x2,
+          dy = y1 - y2;
+      
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+    function makeScore(){
+      ctx.fillStyle = "black";
+      ctx.fillRect(0,0,145,40);
+      ctx.font = "30px Arial";
+      ctx.fillStyle = "white";
+      ctx.fillText("score:"+scorenum , 10,30);
+    };
+     
+
+    function startClock(){
+      clock = setInterval(function(){
+        scorenum = Math.max(--scorenum, 0);
+        makeScore();
+      }, 1500);
+    };
+    function gameover(){
+    return scorenum >= 1000;
+      
+    }
+    function winscreen(){
+      clearInterval(clock);
+      alert("you win!", );
+    }
+    
+  </script>
+</head>
+<body>
+  <canvas></canvas>
+  <p id="score"></p>
+  <audio id="lilypop" src="http://students.ianmarshall.net/js-canvas/assets/sound/pop.mp3"></audio>
+  <audio id="flowerpop" src="http://students.ianmarshall.net/js-canvas/assets/sound/error-short.mp3"></audio>
+  <audio id="splash" src="http://freesound.org/data/previews/274/274017_128404-lq.mp3"></audio>
+  
+</body> 
+</html>

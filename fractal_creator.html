@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Fractal Creator</title>
+  <style>
+    body { margin: 0; }
+    canvas { display: block; }
+    nav { text-align: center; position: absolute; left: 0; right: 0; bottom: 25px; }
+  </style>
+  <script>
+    //globals
+    var canvas, ctx, width, height,
+        startingX, startingY, startingDepth = 50,
+        transparency = 0.25, radiusMultiplier = 10,
+        xMultiplier = 10, yMultiplier = 10,
+        redMultiplier = 20, greenColor = 0, blueColor = 0,
+        mutation = 0;
+    
+    //setup
+    document.addEventListener("DOMContentLoaded", init);
+    function init(){
+      canvas = document.querySelector("canvas");
+      ctx = canvas.getContext("2d");
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      startingX = width/2;
+      startingY = height/2;
+      //
+      document.querySelector("nav input:nth-of-type(1)").addEventListener("input", function(e){
+        xMultiplier = e.target.value;
+        ctx.clearRect(0, 0, width, height);
+        draw(startingDepth);
+      });
+       document.querySelector("nav input:nth-of-type(2").addEventListener("input", function(e){
+        yMultiplier = e.target.value;
+        ctx.clearRect(0, 0, width, height);
+        draw(startingDepth);
+      });               
+       document.querySelector("nav input:nth-of-type(3)").addEventListener("input", function(e){
+        radiusMultiplier = e.target.value;
+        ctx.clearRect(0, 0, width, height);
+        draw(startingDepth);
+      });               
+       document.querySelector("nav input:nth-of-type(4)").addEventListener("input", function(e){
+        startingDepth = e.target.value;
+        ctx.clearRect(0, 0, width, height);
+        draw(startingDepth);
+      });               
+       document.querySelector("nav input:nth-of-type(5)").addEventListener("input", function(e){
+        transparency = e.target.value;
+        ctx.clearRect(0, 0, width, height);
+        draw(startingDepth);
+      });               
+       document.querySelector("nav input:nth-of-type(6)").addEventListener("input", function(e){
+         redMultiplier = e.target.value;
+        ctx.clearRect(0, 0, width, height);
+        draw(startingDepth);
+      });               
+       document.querySelector("nav input:nth-of-type(7)").addEventListener("input", function(e){
+        greenColor = e.target.value;
+        ctx.clearRect(0, 0, width, height);
+        draw(startingDepth);
+      });         
+       document.querySelector("nav input:nth-of-type(8)").addEventListener("input", function(e){
+        blueColor = e.target.value;
+        ctx.clearRect(0, 0, width, height);
+        draw(startingDepth);
+      });
+             document.querySelector("nav input:nth-of-type(9)").addEventListener("input", function(e){
+        mutation = e.target.value;
+        ctx.clearRect(0, 0, width, height);
+        draw(startingDepth);
+       });
+      Array.from(document.querySelectorAll("nav input[type='radio']")).forEach(function(radio){
+        radio.addEventListener("change", function(){
+          ctx.clearRect(0, 0, width, height);
+          draw(startingDepth);
+        });
+      });
+      //
+      draw(startingDepth);
+    }
+    
+    //fractal functions
+    function getX(depth){ return startingX + Math.cos(depth) * depth * xMultiplier + getMutation(); }
+    function getY(depth){ return startingY + Math.sin(depth) * depth * yMultiplier + getMutation(); }
+    function getColor(depth){ return `rgba( ${(depth*redMultiplier)%256},${(depth*greenColor)%256}, ${(depth*blueColor)%256}, ${transparency})`; }
+    function getRadius(depth){ return depth * radiusMultiplier + getMutation(); }
+    function getMutation(){ return Math.random() * mutation - mutation/2};
+    
+    //draw
+    function draw(depth){
+      if (depth <= 0) return;
+      ctx.fillStyle = getColor(depth);
+      var shape = document.querySelector("nav input:checked").value;
+      drawShape[shape](depth);
+      draw(depth-1);
+    }
+    const drawShape = {
+      circle: function(depth){
+          ctx.beginPath();
+          ctx.arc(getX(depth), getY(depth), getRadius(depth), 0, Math.PI*2);
+          ctx.fill();
+      },
+      square: function(depth){
+        var size = getRadius(depth);
+        ctx.fillRect(getX(depth)-size/2, getY(depth)-size/2, size, size); 
+        
+      },
+      triangle: function(depth){
+        var size = getRadius(depth);
+        ctx.beginPath();
+        ctx.moveTo(getX(depth)-size/2, getY(depth)+size/2);
+        ctx.lineTo(getX(depth), getY(depth)-size/2);
+        ctx.lineTo(getX(depth)+size/2, getY(depth)+size/2);
+        ctx.closePath();
+        ctx.fill()
+        
+      },
+      hexagon: function(depth){
+        var x = getX(depth)
+        var y = getY(depth)
+        var size = getRadius(depth);
+        ctx.beginPath();
+        ctx.moveTo(x+size, y);
+        for (let angle = 0; angle<Math.PI*2; angle+=Math.PI/3){
+          ctx.lineTo(x + Math.cos(angle) * size, y + Math.sin(angle) * size);
+        }
+          ctx.closePath();
+        ctx.fill();
+     
+      },
+      star: function(depth){ 
+        var size = getRadius(depth),
+            x = getX(depth),
+            y = getY(depth);
+        ctx.beginPath();
+        for (let angle =-Math.PI/2; angle<Math.PI*3/2; angle+=Math.PI/5){
+          if (angle===-Math.PI/2){
+            ctx.moveTo(x+Math.cos(angle)*size, y+Math.sin(angle)*size);
+          }
+          else {
+            ctx.lineTo(x+Math.cos(angle)*size*3/5, y+Math.sin(angle)*size*3/5);
+                       angle += Math.PI/5;
+            ctx.lineTo(x+Math.cos(angle)*size, y+Math.sin(angle)*size);
+           
+          }
+        } 
+        ctx.closePath();
+        ctx.fill();
+      }
+    };
+    
+  </script>
+</head>
+<body>
+  <canvas></canvas>
+  <nav>
+  <input type="range" min=0 max=20 step=1 value=10/>
+  <input type="range" min=0 max=20 step=1 value=10/>
+  <input type="range" min=1 max=20 step=1 value=10/>
+  <input type="range" min=1 max=100 step=1 value=50/>
+  <input type="range" min=0.01 max=1 step=0.01 value=0.25/>
+  <input type="range" min=1 max=255 step=1 value=0/>
+  <input type="range" min=1 max=255 step=1 value=0/>
+  <input type="range" min=1 max=255 step=1 value=0/>
+  <input type="range" min=1 max=100 step=1 value=0/>
+    <input type="radio" name="shape" value="circle" checked=true/>
+    <input type="radio" name="shape" value="square"/>
+    <input type="radio" name="shape" value="triangle"/>
+    <input type="radio" name="shape" value="hexagon"/>
+     <input type="radio" name="shape" value="star"/>
+  </nav>
+</body>
+</html>
